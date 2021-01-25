@@ -10,6 +10,8 @@ public class ObjectManager implements ActionListener {
 	ArrayList<Alien> aliens = new ArrayList<Alien>();
 	Random random = new Random();
 	
+	int score = 0;
+	
 	ObjectManager(Rocketship rocket) {
 		this.rocket = rocket;
 	}
@@ -19,7 +21,11 @@ public class ObjectManager implements ActionListener {
 	}
 	
 	void addAlien() {
-		aliens.add(new Alien(random.nextInt(LeagueInvaders.WIDTH),0,50,50));
+		aliens.add(new Alien(random.nextInt(LeagueInvaders.WIDTH-50),0,50,50));
+	}
+	
+	int getScore() {
+		return score;
 	}
 	
 	void update() {
@@ -37,10 +43,36 @@ public class ObjectManager implements ActionListener {
 				projectile.isActive = false;
 			}
 		}
+		checkCollision();
+		if(!rocket.isActive) {
+			
+		} else {
+			purgeObjects();
+		}
 		
+	}
+
+	void checkCollision() {
+		//Checks if any Aliens intersect with any Projectiles or the Rocket, setting both resulting objects' isActive to false if so
+		for (Alien alien : aliens) {
+			
+			for (Projectile projectile : projectiles) {
+				if(alien.collisionBox.intersects(projectile.collisionBox)){
+					alien.isActive = false;
+					projectile.isActive = false;
+					score++;
+				}
+			}
+			
+			if(alien.collisionBox.intersects(rocket.collisionBox)){
+				alien.isActive = false;
+				rocket.isActive = false;
+			}
+		}
 	}
 	
 	void draw(Graphics g) {
+		//Draws the Rocket, all Aliens, and all Projectiles
 		rocket.draw(g);
 		for (Alien alien : aliens) {
 			alien.draw(g);
@@ -51,6 +83,7 @@ public class ObjectManager implements ActionListener {
 	}
 	
 	void purgeObjects() {
+		//If any aliens or projectiles are inactive, deletes them
 		for (int i = 0; i < aliens.size(); i++) {
 			if(!aliens.get(i).isActive) {
 				aliens.remove(i);
@@ -67,6 +100,8 @@ public class ObjectManager implements ActionListener {
 			
 		}
 	}
+	
+	
 
 	@Override
 	public void actionPerformed(ActionEvent e) {

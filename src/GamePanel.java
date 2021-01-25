@@ -15,6 +15,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 	final int MENU = 0;
 	final int GAME = 1;
 	final int END = 2;
+	final int HINT = 3;
 	int currentState = MENU;
 	
 	public static BufferedImage image;
@@ -49,6 +50,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 	}
 	void updateGameState() {
 		objectManager.update();
+		if(!rocket.isActive) {
+			currentState = END;
+		}
 	}
 	void updateEndState() {
 	
@@ -69,6 +73,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		
 		
 	}
+	
+	void drawHintState(Graphics g) {
+		g.setColor(Color.BLUE);
+		g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+		
+		g.setFont(titleFont);
+		g.setColor(Color.YELLOW);
+		g.drawString("LEAGUE INVADERS", 26, 200);
+		
+		g.setFont(hintFont);
+		g.drawString("Press UP, DOWN, LEFT, or RIGHT to", 35, 350);
+		g.drawString("move your rocket, press SPACE to shoot.", 20, 375);
+		
+		g.drawString("Enemies will fall from the top of the screen.", 10, 425);
+		g.drawString("Your goal is to shoot as many of them as", 20, 450);
+		g.drawString("possible without letting any touch your", 30, 475);
+		g.drawString("rocket. The game ends when you press", 25, 500);
+		g.drawString("ENTER or your rocket collides with an", 30, 525);
+		g.drawString("enemy.", 200, 550);
+		
+		g.drawString("Press ENTER to continue.", 100, 650);
+	}
 	void drawGameState(Graphics g) {
 		
 		if (gotImage) {
@@ -78,6 +104,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 			g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
 		}
 		
+		g.setFont(hintFont);
+		g.setColor(Color.WHITE);
+		g.drawString(""+objectManager.getScore(), LeagueInvaders.WIDTH-40, LeagueInvaders.HEIGHT-25);
 		objectManager.draw(g);
 		
 	}
@@ -90,7 +119,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		g.drawString("Game Over", 121, 200);
 		
 		g.setFont(hintFont);
-		g.drawString("You killed " + "26" + " enemies", 120, 350);
+		g.drawString("You killed " + objectManager.getScore() + " enemies", 120, 350);
 		
 		g.drawString("Press ENTER to restart", 118, 500);
 	}
@@ -109,6 +138,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		    drawGameState(g);
 		}else if(currentState == END){
 		    drawEndState(g);
+		} else if (currentState == HINT) {
+			drawHintState(g);
 		}
 	}
 
@@ -123,7 +154,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		    updateEndState();
 		}
 		
-		System.out.println("action");
+		
 		repaint();
 
 		
@@ -141,6 +172,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		if (e.getKeyCode()==KeyEvent.VK_ENTER) {
 		    if (currentState == END) {
 		        currentState = MENU;
+		        rocket = new Rocketship(250, 700, 50, 50);
+		        objectManager = new ObjectManager(rocket);
+		    } else if (currentState == HINT) {
+		    	currentState = MENU;
 		    } else {
 		        currentState++;
 		        if (currentState == GAME) {
@@ -149,18 +184,21 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener{
 		        	alienSpawn.stop();
 		        }
 		    }
+		} else if(e.getKeyCode()==KeyEvent.VK_SPACE && currentState == MENU) { 
+			currentState = HINT;
 		} else if (currentState == GAME) {
+		
 			if (e.getKeyCode()==KeyEvent.VK_UP) {
-			    System.out.println("UP");
+			    
 			    rocket.moveUp = true;
 			} else if (e.getKeyCode()==KeyEvent.VK_DOWN) {
-			    System.out.println("DOWN");
+			    
 			    rocket.moveDown = true;
 			} else if (e.getKeyCode()==KeyEvent.VK_LEFT) {
-			    System.out.println("LEFT");
+			    
 			    rocket.moveLeft = true;
 			} else if (e.getKeyCode()==KeyEvent.VK_RIGHT) {
-			    System.out.println("RIGHT");
+			    
 			    rocket.moveRight = true;
 			} else if (e.getKeyCode()==KeyEvent.VK_SPACE) {
 				objectManager.addProjectile(rocket.getProjectile());
